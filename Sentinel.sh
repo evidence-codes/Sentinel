@@ -7,3 +7,23 @@ export FLASK_DEBUG=1
 
 #running the app
 flask run
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Log connection status
+    # with app.app_context():
+    #     try:
+    #         mongo.db.command('ping')
+    #         app.logger.info("Successfully connected to MongoDB")
+    #     except Exception as e:
+    #         app.logger.error(f"Error connecting to MongoDB: {e}")
