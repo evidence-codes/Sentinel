@@ -1,3 +1,5 @@
 Flask
 Flask_PyMongo
 pymongo[srv]
+Flask-Bcrypt 
+Flask-Login
