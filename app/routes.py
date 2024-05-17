@@ -4,8 +4,8 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
-    return "Hello, Flask!"
+    return "Welcome to the Flask app!"
 
-@main.route('/login')
-def login():
-    return "Login here"
+@main.route('/about')
+def about():
+    return "This is the about page."
