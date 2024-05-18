@@ -1,8 +1,8 @@
 from flask_login import UserMixin
 
 class Admin(UserMixin):
-    def __init__(self, user_data):
-        self.id = str(user_data['_id'])
-        self.username = user_data['username']
-        self.email = user_data['email']
-        self.password = user_data['password']
+    def __init__(self, admin_data):
+        self.id = str(admin_data['_id'])
+        self.username = admin_data['username']
+        self.email = admin_data['email']
+        self.password = admin_data['password']
