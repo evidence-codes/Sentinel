@@ -39,6 +39,9 @@ def create_app():
     
     from .admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
+    
+    from .predictions import predict as predict_blueprint
+    app.register_blueprint(predict_blueprint, url_prefix='/predict')
     # print("Auth blueprint registered.")
     
     # for rule in app.url_map.iter_rules():
