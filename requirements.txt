@@ -4,3 +4,5 @@ pymongo[srv]
 Flask-Bcrypt 
 Flask-Login
 numpy
+requests
+scikit-learn
