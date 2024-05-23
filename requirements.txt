@@ -8,3 +8,7 @@ numpy
 requests
 scikit-learn
 pandas
+joblib
+matplotlib
+seaborn
+scipy
