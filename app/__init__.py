@@ -45,6 +45,9 @@ def create_app():
     
     from .device import device as device_blueprint
     app.register_blueprint(device_blueprint, url_prefix='/device')
+    
+    from .data import train as train_blueprint
+    app.register_blueprint(train_blueprint, url_prefix='/data')
     # print("Auth blueprint registered.")
     
     # for rule in app.url_map.iter_rules():
