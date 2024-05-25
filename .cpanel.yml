@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home1/jankaraa/ai.sentinelock.com/
+    - /bin/cp -R Sentinel $DEPLOYPATH
