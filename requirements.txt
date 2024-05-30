@@ -1,6 +1,7 @@
 gunicorn
 waitress
 Flask
+flask-cors
 Flask_PyMongo
 pymongo[srv]
 Flask-Bcrypt 
