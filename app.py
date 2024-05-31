@@ -3,7 +3,10 @@ from app import create_app
 from flask_cors import CORS
 
 app = create_app()
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+cors_origins = ["http://localhost:5173"]
+
+CORS(app, resources={r"/*": {"origins": cors_origins}}, supports_credentials=True)
 
 if __name__ == '__main__':
     # serve(app, host="0.0.0.0", port=8000)
