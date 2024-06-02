@@ -4,13 +4,14 @@ from config import Config
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+from .routes import main as main_blueprint
 
 mongo = PyMongo()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static')
     CORS(app)
     app.config.from_object(Config)
     
@@ -32,8 +33,7 @@ def create_app():
             app.logger.error(f"Error connecting to MongoDB: {e}")     
     
 
-    from .routes import main
-    app.register_blueprint(main)
+    app.register_blueprint(main_blueprint)
     
     # print("Registering auth blueprint...")
     from .auth import auth as auth_blueprint
