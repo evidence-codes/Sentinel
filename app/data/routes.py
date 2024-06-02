@@ -20,7 +20,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor, AdaBoostRegressor, GradientBoostingRegressor
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 
-@train.route('/train_model', methods=['POST'])
+@train.route('/train/trade-in_model', methods=['POST'])
 def train_model():
     # Get the absolute path of the current file
     current_dir = os.path.dirname(os.path.abspath(__file__))
