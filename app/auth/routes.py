@@ -37,19 +37,19 @@ def login():
 def register():
     data = request.get_json()
     fullname = data.get('fullname')
-    username = data.get('username')
     email = data.get('email')
     password = data.get('password')
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    access = data.get('access')
     
     if mongo.db.users.find_one({'email': email}):
         return jsonify({'message': 'Email already registered'}), 400
     
     mongo.db.users.insert_one({
         'fullname': fullname,
-        'username': username,
         'email': email,
-        'password': password_hash
+        'password': password_hash,
+        'access': access
     })
     
     return jsonify({'message': 'Registration successful'}), 201

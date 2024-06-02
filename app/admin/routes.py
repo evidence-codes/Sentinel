@@ -37,7 +37,6 @@ def admin_login():
 @admin.route('/register', methods=['POST'])
 def admin_register():
     data = request.get_json()
-    username = data.get('username')
     email = data.get('email')
     password = data.get('password')
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -46,7 +45,6 @@ def admin_register():
         return jsonify({'message': 'Email already registered'}), 400
     
     mongo.db.admins.insert_one({
-        'username': username,
         'email': email,
         'password': password_hash
     })
