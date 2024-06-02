@@ -10,13 +10,6 @@ app = create_app()
 
 CORS(app)
 
-@app.after_request
-    def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
 
 if __name__ == '__main__':
     # serve(app, host="0.0.0.0", port=8000)
