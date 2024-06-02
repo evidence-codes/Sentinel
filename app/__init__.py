@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from config import Config
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
@@ -10,6 +11,7 @@ login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(Config)
     
     

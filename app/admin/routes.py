@@ -15,19 +15,23 @@ def serialize_doc(doc):
 
 @admin.route('/login', methods=['POST'])
 def admin_login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    admin_data = mongo.db.admins.find_one({'email': email})
-    
-    if admin_data and bcrypt.check_password_hash(admin_data['password'], password):
-        admin = Admin(admin_data)
-        login_user(admin)
-        admin_data.pop('password', None)
-        return jsonify({'message': 'Admin login successful', 'admin': serialize_doc(admin_data)}), 200
-    else:
-        return jsonify({'message': 'Invalid email or password'}), 401
-    
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        admin_data = mongo.db.admins.find_one({'email': email})
+        
+        if admin_data and bcrypt.check_password_hash(admin_data['password'], password):
+            admin = Admin(admin_data)
+            login_user(admin)
+            admin_data.pop('password', None)
+            return jsonify({'message': 'Admin login successful', 'admin': serialize_doc(admin_data)}), 200
+        else:
+            return jsonify({'message': 'Invalid email or password'}), 401
+    except Exception as e:
+        # Log the exception for debugging purposes
+        print(f"Error during admin login: {e}")
+        return jsonify({'message': 'An error occurred during login'}), 500
     
     
 @admin.route('/register', methods=['POST'])
