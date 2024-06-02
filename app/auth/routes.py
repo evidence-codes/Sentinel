@@ -36,6 +36,7 @@ def login():
 @auth.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
+    fullname = data.get('fullname')
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
@@ -45,6 +46,7 @@ def register():
         return jsonify({'message': 'Email already registered'}), 400
     
     mongo.db.users.insert_one({
+        'fullname': fullname,
         'username': username,
         'email': email,
         'password': password_hash
