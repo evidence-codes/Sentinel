@@ -4,6 +4,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User 
 from .. import mongo, bcrypt
+import jwt
 
 # auth = Blueprint('auth', __name__)
 
@@ -27,7 +28,19 @@ def login():
         login_user(user)
         user_data.pop('password', None)  # Remove the password field
         serialized_user_data = serialize_user_data(user_data)  # Serialize user data
-        return jsonify({'message': 'Login successful', 'user': serialized_user_data}), 200
+        
+        # Check if the access_token field exists in user_data
+        if 'access_token' not in user_data:
+            # Encode a new token
+            token = jwt.encode({'user_id': str(user_data['_id']), 'access': str(user_data['access'])}, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithm='HS256')
+            # Update the user document with the new access token
+            mongo.db.users.update_one({'_id': user_data['_id']}, {'$set': {'access_token': token}}, upsert=True)
+        else:
+            # Use the existing access token
+            token = user_data['access_token']
+
+        # Return the response with the access token
+        return jsonify({'message': 'Login successful', 'user': serialized_user_data, 'access_token': token}), 200
     else:
         return jsonify({'message': 'Invalid email or password'}), 401
 

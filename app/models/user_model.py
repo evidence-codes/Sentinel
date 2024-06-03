@@ -7,3 +7,4 @@ class User(UserMixin):
         self.email = user_data['email']
         self.password = user_data['password']
         self.access = user_data['access']
+        # self.access_token = user_data['access_token']
