@@ -12,5 +12,5 @@ class Trade(UserMixin):
         self.months_used = trade_data['months_used']
         self.predicted_trade_in_price = trade_data['predicted_trade_in_price']
         self.preowned_value = trade_data['preowned_value']
-        
+        self.created_at = trade_data['created_at']
    
