@@ -12,6 +12,7 @@ from app.models import Trade
 from .. import mongo
 from app.jwt_utils import jwt_required
 import jwt
+from datetime import datetime
 
 # Construct the path to the model.pkl file
 current_dir = os.path.dirname(__file__)
@@ -109,7 +110,8 @@ def price_predict():
         'condition_category': condition_category,
         'months_used': months_used,
         'predicted_trade_in_price': naira_price,
-        'preowned_value': preowned_naira
+        'preowned_value': preowned_naira,
+        'created_at': datetime.utcnow()  # Add timestamp
     })
     
     # Handle cases where the exchange API request fails
@@ -143,5 +145,8 @@ def convert_to_dollar(naira, rate):
 
 def convert_to_naira(dollar, rate):
     return dollar / rate
+
+
+
 
 

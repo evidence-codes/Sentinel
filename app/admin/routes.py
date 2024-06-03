@@ -2,8 +2,9 @@ from . import admin
 from flask import request, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models import Admin 
+from app.models import Admin, Trade
 from .. import mongo, bcrypt
+from bson import ObjectId
 
 
 # admin = Blueprint('admin', __name__)
@@ -50,3 +51,17 @@ def admin_register():
     })
     
     return jsonify({'message': 'Admin created successfully'}), 201
+
+
+@admin.route('/get-all-predictions', methods=['GET'])
+def get_all_predictions():
+    # Fetch all documents from the 'trades' collection, sorted by 'created_at'
+    predictions = mongo.db.trades.find().sort('created_at', 1)
+    
+    # Convert the cursor to a list of dictionaries
+    predictions_list = []
+    for prediction in predictions:
+        prediction['_id'] = str(prediction['_id'])  # Convert ObjectId to string
+        predictions_list.append(prediction)
+    
+    return jsonify(predictions_list), 200
