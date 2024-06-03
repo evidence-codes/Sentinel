@@ -94,9 +94,12 @@ def price_predict():
     exchange_rate = exchange_data['conversion_rates']['USD']
     
     dollar_price = convert_to_dollar(new_price_dollars, exchange_rate)
+    # Convert predicted price in dollar to naira
+    naira_price = convert_to_naira(predicted_trade_in_price, exchange_rate)
+    preowned_naira = convert_to_naira(preowned_value, exchange_rate)
     
     # Extract the user ID from the JWT token
-    access_token = request.headers.get('Authorization').split(' ')[1]
+    access_token = request.headers.get('Authorization')
     decoded_token = jwt.decode(access_token, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithms=['HS256'])
     user_id = decoded_token['user_id']
     
@@ -124,9 +127,7 @@ def price_predict():
     # arr = np.array([[manufacturer, storage, dollar_price]])
     # prediction = price_model.predict(arr)
     
-    # Convert predicted price in dollar to naira
-    naira_price = convert_to_naira(predicted_trade_in_price, exchange_rate)
-    preowned_naira = convert_to_naira(preowned_value, exchange_rate)
+    
     
     
     

@@ -50,6 +50,9 @@ def create_app():
     
     from .data import train as train_blueprint
     app.register_blueprint(train_blueprint, url_prefix='/data')
+    
+    from .user import user as user_blueprint
+    app.register_blueprint(user_blueprint,url_prefix='/user')
     # print("Auth blueprint registered.")
     
     # for rule in app.url_map.iter_rules():
