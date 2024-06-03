@@ -26,7 +26,8 @@ def admin_login():
             admin = Admin(admin_data)
             login_user(admin)
             admin_data.pop('password', None)
-            return jsonify({'message': 'Admin login successful', 'admin': serialize_doc(admin_data)}), 200
+            admin_access = 'admin'
+            return jsonify({'message': 'Admin login successful', 'admin': serialize_doc(admin_data), 'access': admin_access}), 200
         else:
             return jsonify({'message': 'Invalid email or password'}), 401
     except Exception as e:
