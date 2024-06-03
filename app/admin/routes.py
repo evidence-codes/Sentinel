@@ -66,3 +66,18 @@ def get_all_predictions():
         predictions_list.append(prediction)
     
     return jsonify(predictions_list), 200
+
+
+
+@admin.route('/get-all-users', methods=['GET'])
+def get_all_users():
+    # Fetch all documents from the 'trades' collection, sorted by 'created_at'
+    users = mongo.db.users.find().sort('created_at', 1)
+    
+    # Convert the cursor to a list of dictionaries
+    users_list = []
+    for user in users:
+        user['_id'] = str(user['_id'])  # Convert ObjectId to string
+        users_list.append(user)
+    
+    return jsonify(users_list), 200
