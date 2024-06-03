@@ -10,6 +10,8 @@ import pandas as pd
 import os
 from app.models import Trade
 from .. import mongo
+from app.jwt_utils import jwt_required
+import jwt
 
 # Construct the path to the model.pkl file
 current_dir = os.path.dirname(__file__)
@@ -43,6 +45,7 @@ except Exception as e:
 
 #Trade-in value prediction route    
 @predict.route('/price_model', methods=['POST'])
+@jwt_required
 def price_predict():
     data = request.get_json()
     region = data.get('region')
@@ -91,6 +94,23 @@ def price_predict():
     
     dollar_price = convert_to_dollar(new_price_dollars, exchange_rate)
     
+    # Extract the user ID from the JWT token
+    access_token = request.headers.get('Authorization').split(' ')[1]
+    decoded_token = jwt.decode(access_token, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithms=['HS256'])
+    user_id = decoded_token['user_id']
+    
+    mongo.db.trades.insert_one({
+        'user_id': user_id,
+        'region': region,
+        'device_RAM': device_RAM,
+        'device_storage': device_storage,
+        'new_price_dollars': new_price_dollars,
+        'device_category': device_category,
+        'condition_category': condition_category,
+        'months_used': months_used,
+        'predicted_trade_in_price': naira_price,
+        'preowned_value': preowned_naira
+    })
     
     # Handle cases where the exchange API request fails
     if response.status_code != 200 or 'conversion_rates' not in exchange_data:
