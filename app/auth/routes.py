@@ -23,6 +23,7 @@ def login():
     email = data.get('email')
     password = data.get('password')
     user_data = mongo.db.users.find_one({'email': email})
+    print(user_data)
     
     if user_data and bcrypt.check_password_hash(user_data['password'], password):
         user = User(user_data)
@@ -33,7 +34,7 @@ def login():
         # Check if the access_token field exists in user_data
         if 'access_token' not in user_data:
             # Encode a new token
-            token = jwt.encode({'user_id': str(user_data['_id']), 'access': str(user_data['access'])}, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithm='HS256')
+            token = jwt.encode({'user_id': str(user_data['_id']), 'email': str(user_data['email']), 'access': str(user_data['access'])}, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithm='HS256')
             # Update the user document with the new access token
             mongo.db.users.update_one({'_id': user_data['_id']}, {'$set': {'access_token': token}}, upsert=True)
         else:

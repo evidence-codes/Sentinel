@@ -8,7 +8,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import os
-from app.models import Trade
+from app.models import Trade, User
 from .. import mongo
 from app.jwt_utils import jwt_required
 import jwt
@@ -102,9 +102,18 @@ def price_predict():
     access_token = request.headers.get('Authorization')
     decoded_token = jwt.decode(access_token, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithms=['HS256'])
     user_id = decoded_token['user_id']
+    user_email = decoded_token['email']
+    print(user_id)
+    
+    user_data = mongo.db.users.find_one({'email': user_email})
+    print(user_data)
+    user_name = user_data['fullname']
+    print(user_name)
+    
     
     mongo.db.trades.insert_one({
         'user_id': user_id,
+        'user_name': user_name,
         'region': region,
         'device_RAM': device_RAM,
         'device_storage': device_storage,

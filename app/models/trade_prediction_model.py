@@ -4,6 +4,7 @@ class Trade(UserMixin):
     def __init__(self, trade_data):
         self.id = str(trade_data['_id'])
         self.user_id = trade_data['user_id']
+        self.user_name = trade_data['user_name']
         self.region = trade_data['region']
         self.device_RAM = trade_data['device_RAM']
         self.device_storage = trade_data['device_storage']
