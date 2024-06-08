@@ -101,8 +101,19 @@ def price_predict():
     device_storage = data.get('device_storage')
     new_price_dollars = data.get('new_price_dollars')
     device_category = data.get('device_category')
-    condition_category = data.get('condition_category')
+    # condition_category = data.get('condition_category')
+    test_done = data.get('test_data')
+    test_passed = data.get('test_passed')
     months_used = data.get('months_used')
+    
+    condition_category = ''
+    
+    if test_done == test_passed:
+        condition_category = 'excellent'
+    elif test_done - test_passed <= 5:
+        condition_category = 'good'
+    elif test_done - test_passed > 5:
+        condition_category = 'fair'        
     
     new_data_dict = {
         'region': [region],
