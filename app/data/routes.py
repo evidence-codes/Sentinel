@@ -72,3 +72,119 @@ def train_model():
         pickle.dump(dt_regressor, file)
 
     return jsonify({'message': 'Models created successfully!'})
+
+
+
+@train.route('/train/insurance_model/sap', methods=['POST'])
+def train_insurance_model_sap():
+    # Get the absolute path of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_file_path = os.path.join(current_dir, 'cleaned_sap_dataset_DEPLOYM.csv')
+    
+    # SECTION 1 ---> read the data
+    df = pd.read_csv(csv_file_path)
+
+
+    # SECTION 2 --->  Separating independent variables and the target variable
+    X = df.drop('sap_sentinel_price',axis=1) #independent features
+    y = df['sap_sentinel_price']  # the target features
+
+
+    # SECTION 3 ---> Splitting the dataset into train and test datasets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, shuffle = True, random_state = 1)
+
+
+    # SECTION 4 ---> Define one-hot encoding for 'device_brand' feature
+    one_hot_enc = OneHotEncoder(sparse_output=False)
+    one_hot_cols = ['device_brand']
+
+
+    # SECTION 5 Define a column transformer for the preprocessing of the categorical cols
+    preprocessor = ColumnTransformer([
+        ('onehot', one_hot_enc, one_hot_cols)
+    ], remainder='passthrough')
+
+
+    # SECTION 6 --->  Preprocess the training data
+    X_train_processed = preprocessor.fit_transform(X_train)
+
+
+    # SECTION 7 --->  Preprocess the testing data
+    X_test_processed = preprocessor.transform(X_test)
+
+
+    # SECTION 8 ---> Save the preprocessing steps (preprocessor) into a pickle file
+    with open(os.path.join(current_dir, 'sap_preprocessor.pkl'), 'wb') as file:
+        pickle.dump(preprocessor, file)
+        
+
+    # SECTION 9 --->  Initializing the Decision Tree Regressor 
+    dt_regr = DecisionTreeRegressor(random_state=1)
+
+    # section 9.1 --- Fitting the model to the training dataset to train it
+    dt_regr.fit(X_train_processed, y_train)
+
+
+    # SECTION 10 ---> Save the trained model into a pickle file
+    with open(os.path.join(current_dir, 'sap_model.pkl'), 'wb') as file:
+        pickle.dump(dt_regr, file)
+        
+    return jsonify({'message': 'SAP insurance models created successfully!'})
+
+
+
+@train.route('/train/insurance_model/sld', methods=['POST'])
+def train_insurance_model_sld():
+    # Get the absolute path of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_file_path = os.path.join(current_dir, 'cleaned_sld_dataset.csv')
+    
+    # SECTION 1 ---> read the data
+    df = pd.read_csv(csv_file_path)
+
+
+    # SECTION 2 --->  Separating independent variables and the target variable
+    X = df.drop('sld_sentinel_price',axis=1) #independent features
+    y = df['sld_sentinel_price']  # the target features
+
+
+    # SECTION 3 ---> Splitting the dataset into train and test datasets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, shuffle = True, random_state = 1)
+
+
+    # SECTION 4 ---> Define one-hot encoding for 'device_brand' feature
+    one_hot_enc = OneHotEncoder(sparse_output=False)
+    one_hot_cols = ['device_brand']
+
+
+    # SECTION 5 Define a column transformer for the preprocessing of the categorical cols
+    preprocessor = ColumnTransformer([
+        ('onehot', one_hot_enc, one_hot_cols)
+    ], remainder='passthrough')
+
+
+    # SECTION 6 --->  Preprocess the training data
+    X_train_processed = preprocessor.fit_transform(X_train)
+
+
+    # SECTION 7 --->  Preprocess the testing data
+    X_test_processed = preprocessor.transform(X_test)
+
+
+    # SECTION 8 ---> Save the preprocessing steps (preprocessor) into a pickle file
+    with open(os.path.join(current_dir, '1sld_preprocessor.pkl'), 'wb') as file:
+        pickle.dump(preprocessor, file)
+        
+
+    # SECTION 9 --->  Initializing the Decision Tree Regressor 
+    dt_regr = DecisionTreeRegressor(random_state=1)
+
+    # section 9.1 --- Fitting the model to the training dataset to train it
+    dt_regr.fit(X_train_processed, y_train)
+
+
+    # SECTION 10 ---> Save the trained model into a pickle file
+    with open(os.path.join(current_dir, '1sld_model.pkl'), 'wb') as file:
+        pickle.dump(dt_regr, file)
+        
+    return jsonify({'message': 'SLD insurance models created successfully!'})

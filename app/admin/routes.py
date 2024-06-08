@@ -81,3 +81,35 @@ def get_all_users():
         users_list.append(user)
     
     return jsonify(users_list), 200
+
+@admin.route('/update-user/<user_id>', methods=['PATCH'])
+def update_user(user_id):
+    data = request.get_json()
+    update_fields = {}
+    
+    # Collect the fields to update
+    if 'fullname' in data:
+        update_fields['fullname'] = data['fullname']
+    if 'email' in data:
+        update_fields['email'] = data['email']
+    if 'access' in data:
+        update_fields['access'] = data['access']
+    
+    # Update the user in the database
+    result = mongo.db.users.update_one({'_id': ObjectId(user_id)}, {'$set': update_fields})
+    
+    if result.matched_count > 0:
+        return jsonify({'message': 'User updated successfully!'}), 200
+    else:
+        return jsonify({'message': 'User not found'}), 404
+
+    
+@admin.route('/delete-user/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    # Delete the user from the database
+    result = mongo.db.users.delete_one({'_id': ObjectId(user_id)})
+    
+    if result.deleted_count > 0:
+        return jsonify({'message': 'User deleted successfully!'}), 200
+    else:
+        return jsonify({'message': 'User not found'}), 404   

@@ -1,5 +1,3 @@
-# jwt_utils.py
-
 from functools import wraps
 from flask import request, jsonify, g
 from bson import ObjectId
@@ -27,3 +25,18 @@ def jwt_required(f):
             return jsonify({'message': str(e)}), 401
         return f(*args, **kwargs)
     return decorated_function
+
+def roles_required(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'current_user' not in g:
+                return jsonify({'message': 'User not authenticated'}), 401
+
+            user_roles = g.current_user.get('access', [])
+            if 'admin' in user_roles or any(role in user_roles for role in roles):
+                return f(*args, **kwargs)
+            else:
+                return jsonify({'message': 'Access denied: insufficient permissions'}), 403
+        return decorated_function
+    return wrapper
