@@ -62,6 +62,13 @@ def register():
     password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     access = data.get('access')
     
+    # request_obj = {
+    #     fullname,
+    #     email,
+    #     password,
+    #     access
+    # }
+    # print(request_obj)
     if not isinstance(access, list):
         return jsonify({'message': 'Access should be a list'}), 400
     

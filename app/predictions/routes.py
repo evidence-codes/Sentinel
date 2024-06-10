@@ -101,20 +101,23 @@ def price_predict():
     device_storage = data.get('device_storage')
     new_price_dollars = data.get('new_price_dollars')
     device_category = data.get('device_category')
-    # condition_category = data.get('condition_category')
-    test_done = data.get('test_data')
-    test_passed = data.get('test_passed')
+    condition_category = data.get('condition_category')
+    # test_done = data.get('test_data')
+    # test_passed = data.get('test_passed')
     months_used = data.get('months_used')
     
-    condition_category = ''
     
-    if test_done == test_passed:
-        condition_category = 'excellent'
-    elif test_done - test_passed <= 5:
-        condition_category = 'good'
-    elif test_done - test_passed > 5:
-        condition_category = 'fair'        
+    # if test_done is not None and test_passed is not None:
+    #     if test_done == test_passed:
+    #         condition_category = 'excellent'
+    #     elif test_done - test_passed <= 5:
+    #         condition_category = 'good'
+    #     elif test_done - test_passed > 5:
+    #         condition_category = 'fair'    
     
+    # if condition_category is None:
+    #     return jsonify({'message': 'Insufficient data to determine condition category'}), 400
+
     new_data_dict = {
         'region': [region],
         'device_RAM': [device_RAM],
@@ -268,7 +271,6 @@ def insurance_predict():
 
 @predict.route('/price_model_bulk', methods=['POST'])
 @jwt_required
-# @roles_required('worker')
 def price_predict_bulk():
     file = request.files.get('file')
     
@@ -278,9 +280,11 @@ def price_predict_bulk():
     try:
         # Read the CSV file
         df = pd.read_csv(file)
+        # Strip invisible characters from column names
+        df.columns = df.columns.str.strip('\u2060')
+        print("Column Names:", df.columns.tolist())  # Print column names
     except Exception as e:
         return jsonify({'message': f'Error reading file: {str(e)}'}), 400
-    
     # Ensure all required columns are present in the CSV
     required_columns = ['region', 'device_RAM', 'device_storage', 'new_price_dollars', 'device_category', 'condition_category', 'months_used']
     if not all(col in df.columns for col in required_columns):
@@ -355,7 +359,6 @@ def price_predict_bulk():
         mongo.db.trades.insert_many(documents)
     
     return jsonify({'message': 'Predictions successful', 'predictions': results})
-
 
 @predict.route('/insurance_model_bulk', methods=['POST'])
 def insurance_predict_bulk():
