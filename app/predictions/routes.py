@@ -138,9 +138,10 @@ def price_predict():
     # predicted_trade_in_price = model.predict(preprocessed_data)[0]
     predicted_trade_in_price = model.predict(preprocessed_data)[0]
     
-    
+    result = mongo.db.devices.find_one({'category': device_category})
+    profit_percent = int(result['profit_percent']) / 100
     # Calculate the preowned value of the device
-    preowned_value = (0.3 * predicted_trade_in_price) + predicted_trade_in_price
+    preowned_value = (profit_percent * predicted_trade_in_price) + predicted_trade_in_price
     
     # return jsonify({
     #     'predicted_trade_in_price': predicted_trade_in_price,
