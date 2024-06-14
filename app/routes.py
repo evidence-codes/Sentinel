@@ -1,7 +1,7 @@
 from flask import Blueprint, send_from_directory, render_template
 import os
 
-main = Blueprint('main', __name__)
+main = Blueprint('main', __name__, static_folder='static/assets', template_folder='static')
 
 # @main.route('/')
 # def home():
@@ -18,6 +18,7 @@ def index():
 
 @main.route('/<path:path>')
 def static_proxy(path):
-    file_name = path.split('/')[-1]
-    dir_name = os.path.join(main.static_folder, '/'.join(path.split('/')[:-1]))
-    return send_from_directory(dir_name, file_name)
+    if os.path.exists(os.path.join(main.template_folder, path)):
+        return send_from_directory(main.template_folder, path)
+    else:
+        return send_from_directory(main.template_folder, 'index.html')
