@@ -13,6 +13,8 @@ from .. import mongo
 from app.jwt_utils import jwt_required, roles_required
 import jwt
 from datetime import datetime
+import io
+from flask import send_file
 
 # Construct the path to the model.pkl file
 current_dir = os.path.dirname(__file__)
@@ -328,7 +330,21 @@ def price_predict_bulk():
     if documents:
         mongo.db.trades.insert_many(documents)
     
-    return jsonify({'message': 'Predictions successful', 'predictions': results})
+    # return jsonify({'message': 'Predictions successful', 'predictions': results})
+    # Convert results to a DataFrame
+    results_df = pd.DataFrame(results)
+    
+    # Create a CSV file from the DataFrame
+    csv_buffer = io.StringIO()
+    results_df.to_csv(csv_buffer, index=False)
+    csv_buffer.seek(0)
+    
+    return send_file(
+        io.BytesIO(csv_buffer.getvalue().encode()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='predictions.csv'
+    )
 
 @predict.route('/insurance_model_bulk', methods=['POST'])
 def insurance_predict_bulk():
@@ -394,6 +410,19 @@ def insurance_predict_bulk():
     if documents:
         mongo.db.insurances.insert_many(documents)
     
-    return jsonify({'message': 'Predictions successful', 'predictions': results})
+    # return jsonify({'message': 'Predictions successful', 'predictions': results})
+    results_df = pd.DataFrame(results)
+    
+    # Create a CSV file from the DataFrame
+    csv_buffer = io.StringIO()
+    results_df.to_csv(csv_buffer, index=False)
+    csv_buffer.seek(0)
+    
+    return send_file(
+        io.BytesIO(csv_buffer.getvalue().encode()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='predictions.csv'
+    )
 
     
