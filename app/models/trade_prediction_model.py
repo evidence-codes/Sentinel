@@ -8,7 +8,7 @@ class Trade(UserMixin):
         self.region = trade_data['region']
         self.device_RAM = trade_data['device_RAM']
         self.device_storage = trade_data['device_storage']
-        self.new_price_dollars = trade_data['new_price_dollars']
+        self.new_price = trade_data['new_price']
         self.condition_category = trade_data['condition_category']
         self.months_used = trade_data['months_used']
         self.predicted_trade_in_price = trade_data['predicted_trade_in_price']

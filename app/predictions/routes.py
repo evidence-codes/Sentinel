@@ -93,30 +93,33 @@ except Exception as e:
 #Trade-in value prediction route    
 @predict.route('/price_model', methods=['POST'])
 @jwt_required
-# @roles_required('worker')
 def price_predict():
     data = request.get_json()
     region = data.get('region')
     device_RAM = data.get('device_RAM')
     device_storage = data.get('device_storage')
-    new_price_dollars = data.get('new_price_dollars')
+    new_device_price = data.get('new_device_price')
     device_category = data.get('device_category')
     condition_category = data.get('condition_category')
-    # test_done = data.get('test_data')
-    # test_passed = data.get('test_passed')
     months_used = data.get('months_used')
     
+    # Ensure all required fields are provided
+    required_fields = ['region', 'device_RAM', 'device_storage', 'new_device_price', 'device_category', 'condition_category', 'months_used']
+    if not all(field in data for field in required_fields):
+        return jsonify({'message': f'Missing required fields. Required fields are: {required_fields}'}), 400
     
-    # if test_done is not None and test_passed is not None:
-    #     if test_done == test_passed:
-    #         condition_category = 'excellent'
-    #     elif test_done - test_passed <= 5:
-    #         condition_category = 'good'
-    #     elif test_done - test_passed > 5:
-    #         condition_category = 'fair'    
+    # Get exchange rate
+    url = 'https://v6.exchangerate-api.com/v6/f50628742f57bef260de9dba/latest/NGN'
+    response = requests.get(url)
+    if response.status_code != 200 or 'conversion_rates' not in response.json():
+        return jsonify({'message': 'Failed to retrieve exchange rates'}), 500
     
-    # if condition_category is None:
-    #     return jsonify({'message': 'Insufficient data to determine condition category'}), 400
+    exchange_data = response.json()
+    exchange_rate = exchange_data['conversion_rates']['USD']
+
+    # Convert new_price from Naira to dollars
+    new_price_dollars = convert_to_dollar(new_device_price, exchange_rate)
+    print(new_price_dollars)
 
     new_data_dict = {
         'region': [region],
@@ -131,11 +134,10 @@ def price_predict():
     # Convert new_data into a DataFrame
     new_data_df = pd.DataFrame(new_data_dict)
     
-    # Preprocess the new data using the loaded preprocessing steps first before using the model on it
+    # Preprocess the new data using the loaded preprocessing steps
     preprocessed_data = preprocessor.transform(new_data_df)
     
     # Make predictions using the trained model
-    # predicted_trade_in_price = model.predict(preprocessed_data)[0]
     predicted_trade_in_price = model.predict(preprocessed_data)[0]
     
     result = mongo.db.devices.find_one({'category': device_category})
@@ -143,35 +145,18 @@ def price_predict():
     # Calculate the preowned value of the device
     preowned_value = (profit_percent * predicted_trade_in_price) + predicted_trade_in_price
     
-    # return jsonify({
-    #     'predicted_trade_in_price': predicted_trade_in_price,
-    #     'preowned_value': preowned_value})
-    
-    
-    url = 'https://v6.exchangerate-api.com/v6/f50628742f57bef260de9dba/latest/NGN'
-    
-    # Making our request
-    response = requests.get(url)
-    exchange_data = response.json()
-    exchange_rate = exchange_data['conversion_rates']['USD']
-    
-    dollar_price = convert_to_dollar(new_price_dollars, exchange_rate)
     # Convert predicted price in dollar to naira
     naira_price = convert_to_naira(predicted_trade_in_price, exchange_rate)
     preowned_naira = convert_to_naira(preowned_value, exchange_rate)
-    print(convert_to_naira(10, exchange_rate))
+    
     # Extract the user ID from the JWT token
     access_token = request.headers.get('Authorization')
     decoded_token = jwt.decode(access_token, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithms=['HS256'])
     user_id = decoded_token['user_id']
     user_email = decoded_token['email']
-    print(user_id)
     
     user_data = mongo.db.users.find_one({'email': user_email})
-    print(user_data)
     user_name = user_data['fullname']
-    print(user_name)
-    
     
     mongo.db.trades.insert_one({
         'user_id': user_id,
@@ -179,7 +164,7 @@ def price_predict():
         'region': region,
         'device_RAM': device_RAM,
         'device_storage': device_storage,
-        'new_price_dollars': new_price_dollars,
+        'new_price': new_device_price,  # Save the new_price in Naira
         'device_category': device_category,
         'condition_category': condition_category,
         'months_used': months_used,
@@ -188,28 +173,8 @@ def price_predict():
         'created_at': datetime.utcnow()  # Add timestamp
     })
     
-    # Handle cases where the exchange API request fails
-    if response.status_code != 200 or 'conversion_rates' not in exchange_data:
-        return jsonify({'message': 'Failed to retrieve exchange rates'}), 500
-    
-    # return jsonify({'message': dollar_price})
-    # return jsonify({'message': exchange_data})
-    
-    # arr = np.array([[manufacturer, storage, dollar_price]])
-    # prediction = price_model.predict(arr)
-    
-    
-    
-    
-    
-    # mongo.db.trades.insert_one({
-    #     'manufacturer': manufacturer,
-    #     'storage': storage,
-    #     'price': price,
-    #     'prediction': naira_price
-    # })
-    
     return jsonify({'message': 'Prediction successful', 'predicted_trade_in_price': naira_price, 'preowned_value': preowned_naira})
+
 
 
 def convert_to_dollar(naira, rate):
@@ -286,11 +251,24 @@ def price_predict_bulk():
         print("Column Names:", df.columns.tolist())  # Print column names
     except Exception as e:
         return jsonify({'message': f'Error reading file: {str(e)}'}), 400
+
     # Ensure all required columns are present in the CSV
-    required_columns = ['region', 'device_RAM', 'device_storage', 'new_price_dollars', 'device_category', 'condition_category', 'months_used']
+    required_columns = ['region', 'device_RAM', 'device_storage', 'new_device_price', 'device_category', 'condition_category', 'months_used']
     if not all(col in df.columns for col in required_columns):
         return jsonify({'message': f'Missing required columns. Required columns are: {required_columns}'}), 400
+
+    # Get exchange rate
+    url = 'https://v6.exchangerate-api.com/v6/f50628742f57bef260de9dba/latest/NGN'
+    response = requests.get(url)
+    if response.status_code != 200 or 'conversion_rates' not in response.json():
+        return jsonify({'message': 'Failed to retrieve exchange rates'}), 500
     
+    exchange_data = response.json()
+    exchange_rate = exchange_data['conversion_rates']['USD']
+
+    # Convert new_device_price from Naira to dollars and add new_device_price_dollars column
+    df['new_price_dollars'] = convert_to_dollar(df['new_device_price'], exchange_rate)
+
     # Preprocess the data using the loaded preprocessing steps
     preprocessed_data = preprocessor.transform(df)
     
@@ -299,17 +277,7 @@ def price_predict_bulk():
     
     results = []
     documents = []
-    
-    # Calculate preowned values and convert prices
-    url = 'https://v6.exchangerate-api.com/v6/f50628742f57bef260de9dba/latest/NGN'
-    response = requests.get(url)
-    
-    if response.status_code != 200 or 'conversion_rates' not in response.json():
-        return jsonify({'message': 'Failed to retrieve exchange rates'}), 500
-    
-    exchange_data = response.json()
-    exchange_rate = exchange_data['conversion_rates']['USD']
-    
+
     access_token = request.headers.get('Authorization')
     decoded_token = jwt.decode(access_token, 'bd0467ad425dd8508a78619a393502584d9aa6b2', algorithms=['HS256'])
     user_id = decoded_token['user_id']
@@ -320,9 +288,10 @@ def price_predict_bulk():
     
     for idx, row in df.iterrows():
         predicted_trade_in_price = predictions[idx]
-        preowned_value = (0.3 * predicted_trade_in_price) + predicted_trade_in_price
-        
-        dollar_price = convert_to_dollar(row['new_price_dollars'], exchange_rate)
+        result = mongo.db.devices.find_one({'category': row['device_category']})
+        profit_percent = int(result['profit_percent']) / 100
+        # Calculate the preowned value of the device
+        preowned_value = (profit_percent * predicted_trade_in_price) + predicted_trade_in_price
         naira_price = convert_to_naira(predicted_trade_in_price, exchange_rate)
         preowned_naira = convert_to_naira(preowned_value, exchange_rate)
         
@@ -330,7 +299,7 @@ def price_predict_bulk():
             'region': row['region'],
             'device_RAM': row['device_RAM'],
             'device_storage': row['device_storage'],
-            'new_price_dollars': row['new_price_dollars'],
+            'new_device_price': row['new_device_price'],
             'device_category': row['device_category'],
             'condition_category': row['condition_category'],
             'months_used': row['months_used'],
@@ -346,7 +315,7 @@ def price_predict_bulk():
             'region': row['region'],
             'device_RAM': row['device_RAM'],
             'device_storage': row['device_storage'],
-            'new_price_dollars': row['new_price_dollars'],
+            'new_device_price': naira_price,
             'device_category': row['device_category'],
             'condition_category': row['condition_category'],
             'months_used': row['months_used'],
